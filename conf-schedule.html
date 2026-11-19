@@ -1,0 +1,657 @@
+<title>Festival Schedule</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: stacked title block over a glass table per day. Phone shows one day (picked from the title);
+   wide screens and TVs show both days side by side, date label left-aligned above each table. */
+:root {
+  --bg: #2a0721;
+  --burgundy: #7a0f47;
+  --yellow: #f4b400;
+  --teal: #17a8a4;
+  --ink: #ffffff;
+  --muted: rgba(255, 255, 255, 0.64);
+  --glass: rgba(255, 255, 255, 0.065);
+  --glass-strong: rgba(255, 255, 255, 0.1);
+  --line: rgba(255, 255, 255, 0.15);
+  --dark-ink: #1b0614;
+  --font-display: "Sora", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --tw: 6rem;
+  color-scheme: dark;
+}
+html { font-size: 16px; background: var(--bg); }
+@media (min-width: 1600px) { html { font-size: 20px; } }
+@media (min-width: 2300px) { html { font-size: 27px; } }
+
+* { box-sizing: border-box; }
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.35;
+  padding-block: 1.4rem 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+}
+.wrap { position: relative; max-width: 120rem; margin: 0 auto; padding-inline: clamp(0px, 1.6vw, 2.5rem); }
+
+/* Title block */
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;  }
+.top.no-sub { align-items: center; }
+.titles { min-width: 0; }
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 5.2vw, 3.7rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.subtitle {
+  margin: 0.35rem 0 0;
+  font-weight: 300;
+  font-size: clamp(1.25rem, 3vw, 2.1rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.motif { flex: none; width: clamp(4.6rem, 11vw, 8.4rem); height: auto; margin-top: 0.2rem; }
+
+/* Day picker: phones and tablets only */
+.date-pick { margin-top: 0.7rem; }
+.date-pick select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'><path d='M2 2l6 6 6-6' fill='none' stroke='%23f4b400' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 0.1rem center;
+  color: var(--yellow);
+  border: 0;
+  border-bottom: 2px solid rgba(244, 180, 0, 0.45);
+  border-radius: 0;
+  padding: 0.15rem 1.7rem 0.3rem 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 4.6vw, 1.5rem);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  max-width: 100%;
+}
+.date-pick select option { background: #35092a; color: #fff; }
+.date-pick select:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
+
+/* Legend: a colored dot and the type name, no pills */
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+.legend li { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500; }
+.legend i { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--c); flex: none; }
+
+/* Days */
+.days { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem 2.2rem; align-items: start; }
+.day-title {
+  display: none;
+  margin: 0 0 0.8rem;
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 1.9vw, 1.7rem);
+  letter-spacing: 0.02em;
+  color: var(--yellow);
+}
+.slot {
+  display: grid;
+  grid-template-columns: var(--tw) minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 0.45rem;
+  row-gap: 0.45rem;
+  padding: 0.5rem;
+  background: var(--glass);
+  border: 1px solid var(--line);
+}
+/* One header wrapper, same width as the rows: time header, divider, then the two rooms. */
+.head {
+  display: grid;
+  grid-template-columns: var(--tw) minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 0.45rem;
+  padding: 0 0.5rem;
+  margin-bottom: 0.6rem;
+  background: var(--glass-strong);
+  border: 1px solid var(--line);
+}
+.head span {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-block: 0.7rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+.head .head-time {
+  padding-left: 0.2rem;
+  padding-right: 0.225rem;
+  margin-right: -0.225rem;
+  border-right: 1px solid var(--line);
+  justify-content: center;
+}
+.head .head-room { justify-content: center; text-align: center; padding-inline: 0.4rem; }
+.slots { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.time {
+  grid-column: 1;
+  align-self: center;
+  min-width: 0;
+  padding-left: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.time .t {
+  display: block;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+.ev {
+  min-width: 0;
+  padding: 0.55rem 0.55rem;
+  background: var(--c);
+  color: var(--t);
+  overflow-wrap: anywhere;
+}
+.ev.both { grid-column: 2 / span 2; }
+.ev .ev-title { font-weight: 700; font-size: 0.84rem; line-height: 1.22; }
+.ev .ev-sp { margin-top: 0.22rem; font-weight: 500; font-size: 0.74rem; line-height: 1.25; opacity: 0.86; }
+.empty {
+  min-width: 0;
+  min-height: 2.6rem;
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.none, .state {
+  padding: 1.4rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+}
+.state { margin: 2rem 0; font-size: 1.1rem; }
+
+/* Footer: plain text on the plain background */
+.foot {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.4rem 1.5rem;
+  max-width: 120rem;
+  margin: 2rem auto 0;
+  padding: 1rem clamp(0px, 1.6vw, 2.5rem) calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Wide screens and TVs: both days side by side, dates above each table */
+@media (min-width: 1100px) {
+  :root { --tw: 7.7rem; }
+  .days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .day-title { display: block; }
+  .date-pick { display: none; }
+  .day.is-off { display: block; }
+  .ev .ev-title { font-size: 0.95rem; }
+  .ev .ev-sp { font-size: 0.8rem; }
+  .head span { font-size: 0.9rem; }
+  .legend li { font-size: 0.95rem; }
+  .time .t { font-size: 0.95rem; }
+}
+@media (max-width: 1099px) {
+  .day.is-off { display: none; }
+}
+@media (max-width: 380px) {
+  :root { --tw: 5.4rem; }
+  .time .t { font-size: 0.68rem; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="titles">
+      <h1 id="title">Festival Schedule</h1>
+      <p class="subtitle" id="subtitle">Conferences, Workshops &amp; Shows</p>
+      <div class="date-pick">
+        <select id="daySelect" aria-label="Choose festival day"></select>
+      </div>
+    </div>
+    <img class="motif" src="logoFM.png" alt="" aria-hidden="true">
+  </header>
+
+  <ul class="legend" id="legend" aria-label="Event types"></ul>
+  <main class="days" id="days"></main>
+</div>
+
+<footer class="foot">
+  <span id="foot"></span>
+  <span id="status" role="status"></span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Configuration ----------
+     Paste the Google Sheet ID here (the long code between /d/ and /edit in its address),
+     or leave it empty and open this page with ?sheet=SHEET_ID at the end of its address.
+     With no ID the page shows the built-in sample schedule. */
+  var SHEET_ID = "1XZuqPcSP-ogmmZdHhWWfD8LzaRNdFPXLLGG_jyUlRio";
+  var POLL_MS = 30000;
+
+  var TABS = { schedule: "Schedule", types: "Event Types", settings: "Settings", rooms: "Rooms" };
+  var DEFAULT_ROOMS = ["Vienne Room", "Conference Room"];
+  var ROOMS = DEFAULT_ROOMS.slice();
+  var DAYS = [1, 2];
+  var FALLBACK_COLOR = "#6e5a74";
+
+  var qs = "";
+  try { qs = new URLSearchParams(location.search).get("sheet") || ""; } catch (e) {}
+  var sheetId = (qs || SHEET_ID).trim();
+
+  /* ---------- Sample data (mirrors the Google Sheet template) ---------- */
+  var V = ROOMS[0], C = ROOMS[1], B = "Both rooms";
+  var SAMPLE = {
+    rooms: [V, C, B].map(function (n) { return { "room name": n }; }),
+    settings: {
+      "title": "Festival Schedule",
+      "subtitle": "Conferences, Workshops & Shows",
+      "time header": "Time",
+      "day 1 label": "Day 1 - Saturday",
+      "day 2 label": "Day 2 - Sunday",
+      "footer": "Schedule may change. Check this screen for updates."
+    },
+    types: [
+      ["Conference", "#17A8A4"], ["Workshop", "#F4B400"], ["Youth Workshop", "#E04F8E"],
+      ["Show", "#9C1A5C"], ["Break", "#6E5A74"]
+    ].map(function (r) { return { "type": r[0], "color (hex)": r[1] }; }),
+    schedule: [
+      ["Day 1", "10:00 - 10:45", B, "Show", "Opening Ceremony", "Festival Team"],
+      ["Day 1", "11:00 - 12:00", V, "Conference", "The Future of Public Spaces", "Speaker Name"],
+      ["Day 1", "11:00 - 12:00", C, "Workshop", "Printmaking for Beginners", "Speaker Name"],
+      ["Day 1", "12:00 - 13:30", B, "Break", "Lunch Break", ""],
+      ["Day 1", "13:30 - 14:30", V, "Youth Workshop", "Podcast Lab for Teens", "Speaker Name"],
+      ["Day 1", "13:30 - 14:30", C, "Conference", "Local Food Systems", "Speaker Name"],
+      ["Day 1", "15:00 - 16:00", V, "Conference", "Music and Memory", "Speaker Name"],
+      ["Day 1", "15:00 - 16:00", C, "Youth Workshop", "Stop-Motion Animation", "Speaker Name"],
+      ["Day 1", "17:00 - 18:30", V, "Show", "Evening Concert", "Artist Name"],
+      ["Day 2", "10:00 - 11:00", V, "Workshop", "Natural Dyes Workshop", "Speaker Name"],
+      ["Day 2", "10:00 - 11:00", C, "Conference", "Urban Mobility Talk", "Speaker Name"],
+      ["Day 2", "11:30 - 12:30", V, "Show", "Storytelling Show", "Artist Name"],
+      ["Day 2", "11:30 - 12:30", C, "Youth Workshop", "Young Voices Radio", "Speaker Name"],
+      ["Day 2", "12:30 - 14:00", B, "Break", "Lunch Break", ""],
+      ["Day 2", "14:00 - 15:00", V, "Conference", "Craft and Community", "Speaker Name"],
+      ["Day 2", "14:00 - 15:00", C, "Workshop", "Bookbinding Workshop", "Speaker Name"],
+      ["Day 2", "15:30 - 16:30", V, "Show", "Closing Performance", "Artist Name"]
+    ].map(function (r) {
+      return { "day": r[0], "time": r[1], "room": r[2], "event type": r[3], "title": r[4], "speaker": r[5] };
+    })
+  };
+
+  /* ---------- Reading the Google Sheet ----------
+     Uses the sheet's script feed (JSONP), which works from any page address,
+     including a file opened straight from a computer, with no CORS restrictions. */
+  var cbCount = 0;
+
+  function cellText(c) {
+    if (!c) return "";
+    var v = c.f != null ? c.f : c.v;
+    return v == null ? "" : String(v).trim();
+  }
+
+  function tableToObjects(t) {
+    var labels = (t.cols || []).map(function (c) { return (c.label || "").trim().toLowerCase(); });
+    var rows = (t.rows || []).map(function (r) { return (r.c || []).map(cellText); });
+    if (!labels.some(Boolean) && rows.length) {
+      labels = rows[0].map(function (h) { return h.toLowerCase(); });
+      rows = rows.slice(1);
+    }
+    return rows.filter(function (r) {
+      return r.some(function (c) { return c !== ""; });
+    }).map(function (r) {
+      var o = {};
+      labels.forEach(function (h, i) { if (h) o[h] = r[i] || ""; });
+      return o;
+    });
+  }
+
+  function fetchTab(name) {
+    return new Promise(function (resolve, reject) {
+      var cb = "__festivalCb" + (++cbCount) + "_" + Date.now();
+      var s = document.createElement("script");
+      var done = false;
+      var timer = setTimeout(function () { finish(new Error("timeout")); }, 12000);
+      function finish(err, table) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        if (s.parentNode) s.parentNode.removeChild(s);
+        if (err) reject(err); else resolve(tableToObjects(table));
+      }
+      window[cb] = function (resp) {
+        if (!resp || resp.status !== "ok" || !resp.table) finish(new Error("Sheet not readable"));
+        else finish(null, resp.table);
+      };
+      s.onerror = function () { finish(new Error("Could not load the sheet")); };
+      s.src = "https://docs.google.com/spreadsheets/d/" + encodeURIComponent(sheetId) +
+        "/gviz/tq?tqx=out:json;responseHandler:" + cb +
+        "&headers=1&sheet=" + encodeURIComponent(name) + "&_=" + Date.now();
+      document.head.appendChild(s);
+    });
+  }
+
+  function loadSheet() {
+    return Promise.all([
+      fetchTab(TABS.schedule), fetchTab(TABS.types), fetchTab(TABS.settings),
+      fetchTab(TABS.rooms).catch(function () { return []; })
+    ]).then(function (r) {
+      var settings = {};
+      r[2].forEach(function (row) { if (row.setting) settings[row.setting.toLowerCase()] = row.value || ""; });
+      /* A missing Rooms tab can come back as another tab's data; only rows with a "Room name" column count. */
+      var rooms = r[3].filter(function (row) { return Object.prototype.hasOwnProperty.call(row, "room name"); });
+      return { schedule: r[0], types: r[1], settings: settings, rooms: rooms };
+    });
+  }
+
+  /* ---------- Helpers ---------- */
+  function startMinutes(t) {
+    var m = /(\d{1,2})\s*[:h.]\s*(\d{2})\s*(am|pm)?/i.exec(t);
+    var h, min;
+    if (m) { h = +m[1]; min = +m[2]; }
+    else {
+      m = /(\d{1,2})\s*(am|pm)/i.exec(t);
+      if (!m) return 99999;
+      h = +m[1]; min = 0; m[3] = m[2];
+    }
+    if (m[3]) {
+      var p = m[3].toLowerCase();
+      if (p === "pm" && h < 12) h += 12;
+      if (p === "am" && h === 12) h = 0;
+    }
+    return h * 60 + min;
+  }
+
+  function parseHex(v) {
+    var s = String(v || "").trim().replace(/^#/, "");
+    if (/^[0-9a-f]{3}$/i.test(s)) s = s.split("").map(function (c) { return c + c; }).join("");
+    if (!/^[0-9a-f]{6}$/i.test(s)) return null;
+    return "#" + s.toLowerCase();
+  }
+  function lum(hex) {
+    var c = [1, 3, 5].map(function (i) {
+      var v = parseInt(hex.substr(i, 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function inkFor(hex) {
+    var l = lum(hex);
+    var onWhite = 1.05 / (l + 0.05);
+    var onDark = (l + 0.05) / (lum("#1b0614") + 0.05);
+    return onWhite >= onDark ? "#ffffff" : "#1b0614";
+  }
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function fmtOne(part) {
+    var m = /^\s*(\d{1,2})\s*(?:[:h.]\s*(\d{2}))?\s*(am|pm)?\s*$/i.exec(part);
+    if (!m || (!m[2] && !m[3])) return part.trim();
+    var h = +m[1], mi = m[2] ? +m[2] : 0;
+    if (m[3]) {
+      var p = m[3].toLowerCase();
+      if (p === "pm" && h < 12) h += 12;
+      if (p === "am" && h === 12) h = 0;
+    }
+    return pad2(h) + "h" + pad2(mi);
+  }
+  function fmtTimeRange(t) {
+    return t.split(/\s*[-\u2013\u2014]\s*|\s+to\s+/i).map(fmtOne).join(" - ");
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function normalize(data) {
+    var s = data.settings || {};
+    var roomNames = (data.rooms || []).map(function (r) { return (r["room name"] || "").trim(); }).filter(Boolean);
+    ROOMS = roomNames.length >= 2 ? [roomNames[0], roomNames[1]] : DEFAULT_ROOMS.slice();
+    var colors = {};
+    (data.types || []).forEach(function (t) {
+      var name = (t["type"] || "").trim();
+      if (name) colors[name.toLowerCase()] = parseHex(t["color (hex)"]) || FALLBACK_COLOR;
+    });
+    var typeOrder = (data.types || []).map(function (t) { return (t["type"] || "").trim(); }).filter(Boolean);
+    var events = [];
+    (data.schedule || []).forEach(function (r) {
+      var d = /\d+/.exec(r["day"] || "");
+      var title = (r["title"] || "").trim();
+      if (!d || !title) return;
+      var room = (r["room"] || "").trim();
+      var idx = -1;
+      ROOMS.forEach(function (n, i) { if (n.toLowerCase() === room.toLowerCase()) idx = i; });
+      var type = (r["event type"] || "").trim();
+      events.push({
+        day: +d[0],
+        time: (r["time"] || "").replace(/\s+/g, " ").trim(),
+        room: idx,               /* -1 = spans both rooms */
+        type: type,
+        title: title,
+        speaker: (r["speaker"] || "").trim(),
+        color: colors[type.toLowerCase()] || FALLBACK_COLOR
+      });
+    });
+    return {
+      title: s["title"] || "Festival Schedule",
+      subtitle: s["subtitle"] || "",
+      timeHeader: s["time header"] || "Time",
+      footer: s["footer"] || "",
+      dayLabels: { 1: s["day 1 label"] || "Day 1", 2: s["day 2 label"] || "Day 2" },
+      colors: colors,
+      typeOrder: typeOrder,
+      events: events
+    };
+  }
+
+  /* ---------- Rendering ---------- */
+  var model = null;
+  var currentDay = 1;
+
+  function dayFromHash() {
+    var m = /^#day-(\d+)$/.exec(location.hash || "");
+    return m && DAYS.indexOf(+m[1]) >= 0 ? +m[1] : null;
+  }
+
+  function eventCell(ev, both) {
+    var hex = ev.color;
+    var c = el("div", "ev" + (both ? " both" : ""));
+    c.style.setProperty("--c", hex);
+    c.style.setProperty("--t", inkFor(hex));
+    c.appendChild(el("div", "ev-title", ev.title));
+    if (ev.speaker) c.appendChild(el("div", "ev-sp", ev.speaker));
+    if (ev.type) c.appendChild(el("span", "sr", ev.type));
+    return c;
+  }
+
+  function slotNode(time, list) {
+    var rooms = [[], []], both = [];
+    list.forEach(function (e) { (e.room < 0 ? both : rooms[e.room]).push(e); });
+    var roomRows = Math.max(rooms[0].length, rooms[1].length);
+    var total = roomRows + both.length;
+    var slot = el("article", "slot");
+
+    var t = el("div", "time");
+    t.style.gridRow = "1 / span " + Math.max(total, 1);
+    t.appendChild(el("span", "t", fmtTimeRange(time)));
+    slot.appendChild(t);
+
+    for (var i = 0; i < roomRows; i++) {
+      for (var r = 0; r < 2; r++) {
+        var node = rooms[r][i] ? eventCell(rooms[r][i], false) : el("div", "empty");
+        node.style.gridColumn = String(r + 2);
+        node.style.gridRow = String(i + 1);
+        slot.appendChild(node);
+      }
+    }
+    both.forEach(function (e, j) {
+      var n = eventCell(e, true);
+      n.style.gridRow = String(roomRows + j + 1);
+      slot.appendChild(n);
+    });
+    return slot;
+  }
+
+  function dayNode(day) {
+    var sec = el("section", "day");
+    sec.dataset.day = String(day);
+    sec.appendChild(el("h2", "day-title", model.dayLabels[day]));
+
+    var head = el("div", "head");
+    head.appendChild(el("span", "head-time", model.timeHeader));
+    ROOMS.forEach(function (n) { head.appendChild(el("span", "head-room", n)); });
+    sec.appendChild(head);
+
+    var evs = model.events.filter(function (e) { return e.day === day; });
+    if (!evs.length) { sec.appendChild(el("div", "none", "No events scheduled yet.")); return sec; }
+
+    var map = {}, order = [];
+    evs.forEach(function (e) {
+      if (!map[e.time]) { map[e.time] = []; order.push(e.time); }
+      map[e.time].push(e);
+    });
+    order.sort(function (a, b) { return startMinutes(a) - startMinutes(b) || (a < b ? -1 : 1); });
+
+    var slots = el("div", "slots");
+    order.forEach(function (tm) { slots.appendChild(slotNode(tm, map[tm])); });
+    sec.appendChild(slots);
+    return sec;
+  }
+
+  function applyDay() {
+    var secs = document.querySelectorAll(".day");
+    for (var i = 0; i < secs.length; i++) {
+      secs[i].classList.toggle("is-off", +secs[i].dataset.day !== currentDay);
+    }
+    var sel = document.getElementById("daySelect");
+    if (sel.value !== String(currentDay)) sel.value = String(currentDay);
+  }
+
+  function render() {
+    document.getElementById("title").textContent = model.title;
+    var sub = document.getElementById("subtitle");
+    sub.textContent = model.subtitle;
+    sub.hidden = !model.subtitle;
+    document.querySelector(".top").classList.toggle("no-sub", !model.subtitle);
+    document.getElementById("foot").textContent = model.footer;
+
+    var sel = document.getElementById("daySelect");
+    sel.textContent = "";
+    DAYS.forEach(function (d) {
+      var o = el("option", null, model.dayLabels[d]);
+      o.value = String(d);
+      sel.appendChild(o);
+    });
+
+    var used = {};
+    model.events.forEach(function (e) { if (e.type) used[e.type.toLowerCase()] = true; });
+    var legend = document.getElementById("legend");
+    legend.textContent = "";
+    model.typeOrder.forEach(function (name) {
+      if (!used[name.toLowerCase()]) return;
+      var li = el("li", null, name);
+      var dot = el("i");
+      dot.style.setProperty("--c", model.colors[name.toLowerCase()] || FALLBACK_COLOR);
+      li.insertBefore(dot, li.firstChild);
+      legend.appendChild(li);
+    });
+
+    var days = document.getElementById("days");
+    days.textContent = "";
+    DAYS.forEach(function (d) { days.appendChild(dayNode(d)); });
+    applyDay();
+    document.title = model.title;
+  }
+
+  function showState(msg) {
+    var days = document.getElementById("days");
+    days.textContent = "";
+    days.appendChild(el("div", "state", msg));
+    document.getElementById("legend").textContent = "";
+  }
+
+  function setStatus(msg) { document.getElementById("status").textContent = msg; }
+  function clock() {
+    try { return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return ""; }
+  }
+
+  /* ---------- Day selection ---------- */
+  var d0 = dayFromHash();
+  if (d0) currentDay = d0;
+  document.getElementById("daySelect").addEventListener("change", function (e) {
+    currentDay = +e.target.value;
+    try { history.replaceState(null, "", "#day-" + currentDay); } catch (err) { location.hash = "day-" + currentDay; }
+    applyDay();
+  });
+  window.addEventListener("hashchange", function () {
+    var d = dayFromHash();
+    if (d) { currentDay = d; applyDay(); }
+  });
+
+  /* ---------- Data flow ---------- */
+  var cacheKey = "festival-schedule-" + sheetId;
+  var lastJSON = "";
+
+  function accept(data, from) {
+    var j = JSON.stringify(data);
+    if (j !== lastJSON) { lastJSON = j; model = normalize(data); render(); }
+    if (from === "live") { lastOk = clock(); setStatus("Updated " + lastOk); }
+  }
+
+  var lastOk = "";
+  function refresh() {
+    loadSheet().then(function (data) {
+      try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) {}
+      accept(data, "live");
+    }).catch(function () {
+      if (model) setStatus(lastOk ? "Connection lost. Last update " + lastOk + "." : "Connection lost. Showing the last saved schedule.");
+      else showState("The schedule could not be loaded. Retrying...");
+    });
+  }
+
+  if (!sheetId) {
+    accept(SAMPLE, "sample");
+    setStatus("Preview with sample data");
+  } else {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch (e) {}
+    if (cached) { accept(cached, "cache"); setStatus("Updating..."); }
+    else showState("Loading the schedule...");
+    refresh();
+    setInterval(function () { if (document.visibilityState !== "hidden") refresh(); }, POLL_MS);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") refresh();
+    });
+  }
+
+  /* Keep TV screens awake while the page is visible (optional, ignored when refused). */
+  function keepAwake() {
+    try {
+      if (navigator.wakeLock && document.visibilityState === "visible") {
+        navigator.wakeLock.request("screen").catch(function () {});
+      }
+    } catch (e) {}
+  }
+  keepAwake();
+  document.addEventListener("visibilitychange", keepAwake);
+})();
+</script>
