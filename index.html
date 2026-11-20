@@ -23,11 +23,11 @@
   --font-display: "Sora", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --tw: 6rem;
+  --logo: clamp(3.4rem, 11vw, 8.4rem);
+  --logo-big: clamp(4rem, 11vw, 8.5rem);
   color-scheme: dark;
 }
 html { font-size: 16px; background: var(--bg); }
-@media (min-width: 1600px) { html { font-size: 20px; } }
-@media (min-width: 2300px) { html { font-size: 27px; } }
 
 * { box-sizing: border-box; }
 body {
@@ -47,14 +47,17 @@ body {
 .wrap { position: relative; max-width: 120rem; margin: 0 auto; padding-inline: clamp(0px, 1.6vw, 2.5rem); }
 
 /* Title block */
-.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1rem; }
 .top.no-sub { align-items: center; }
 .titles { min-width: 0; }
+.logos { display: flex; align-items: center; gap: 1.5rem; }
 h1 {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(2rem, 5.2vw, 3.7rem);
+  /* always one line, always a gap before the logo: shrinks with the screen width */
+  font-size: min(3.7rem, calc((100vw - 32px - var(--logo) - 3rem) / 10.5));
+  white-space: nowrap;
   line-height: 1.02;
   letter-spacing: 0.01em;
   text-transform: uppercase;
@@ -67,10 +70,10 @@ h1 {
   line-height: 1.15;
   text-wrap: balance;
 }
-.motif { flex: none; width: clamp(4.6rem, 11vw, 8.4rem); height: auto; margin-top: 0.2rem; }
+.motif { flex: none; width: var(--logo); height: auto; margin: 0; }
 
 /* Day picker: phones and tablets only */
-.date-pick { margin-top: 0.9rem; }
+.date-pick { margin: 0 0 1.4rem; }
 .date-pick select {
   appearance: none;
   -webkit-appearance: none;
@@ -195,36 +198,39 @@ h1 {
   color: var(--muted);
 }
 
-/* Wide screens and TVs: both days side by side, dates above each table */
-@media (min-width: 1100px) {
-  :root { --tw: 7.7rem; }
-  .days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .day-title { display: block; }
-  .date-pick { display: none; }
-  .day.is-off { display: block; }
-  .ev .ev-title { font-size: 0.95rem; }
-  .ev .ev-sp { font-size: 0.8rem; }
-  .head span { font-size: 0.9rem; }
-  .legend li { font-size: 0.95rem; }
-  .time .t { font-size: 0.95rem; }
-  .top { margin-bottom: 1.6rem; }
-  .legend { gap: 0.6rem 2rem; margin-bottom: 2.4rem; }
-}
+.day .legend { display: none; }
 
-/* Very large screens: roomier header (title / legend / tables) */
-@media (min-width: 1600px) {
-  .top { margin-bottom: 2.2rem; }
-  .legend { gap: 0.8rem 3rem; margin-bottom: 3.4rem; }
-  .legend li { gap: 0.7rem; }
-}
-@media (min-width: 2300px) {
-  .top { margin-bottom: 2.8rem; }
-  .legend { gap: 1rem 3.6rem; margin-bottom: 4rem; }
+/* Wide screens and TVs: both days side by side. A small script (fitToScreen) picks the largest
+   text size at which both full tables fit on the screen without scrolling. */
+@media (min-width: 1100px) {
+  :root { --tw: 9.4rem; --logo: 5.5rem; }
+  body { padding-top: 1.6rem; }
+  .wrap { padding-inline: 2.5rem; }
+  h1 { font-size: 3.4rem; }
+  .top { margin-bottom: 1.6rem; }
+  .date-pick { display: none; }
+  .days { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 3rem; }
+  .day-title { display: block; font-size: 1.6rem; margin-bottom: 0.7rem; }
+  .day.is-off { display: block; }
+  .head { column-gap: 0.5rem; padding: 0 0.6rem; margin-bottom: 0.5rem; }
+  .head span { font-size: 1rem; padding-block: 0.55rem; }
+  .slots { gap: 0.45rem; }
+  .slot { padding: 0.4rem 0.5rem; column-gap: 0.5rem; row-gap: 0.4rem; }
+  .ev { padding: 0.45rem 0.7rem; }
+  .ev .ev-title { font-size: 1.15rem; line-height: 1.2; }
+  .ev .ev-sp { font-size: 0.95rem; margin-top: 0.2rem; }
+  .time .t { font-size: 1.1rem; }
+  .empty { min-height: 2.2rem; }
+  .day .legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem 1.5rem; margin: 5rem 0 0; }
+  .day .legend li { font-size: 2rem; }
+  .day .legend i { width: 0.9rem; height: 0.9rem; }
+  .foot { margin-top: 1.2rem; font-size: 0.85rem; padding-top: 0.6rem; }
+  img.motif { width: var(--logo-big); }
 }
 
 /* Phones and tablets */
 @media (max-width: 1099px) {
-  :root { --tw: 5.2rem; }
+  :root { --tf: clamp(0.62rem, 3vw, 0.95rem); --tw: calc(var(--tf) * 8.8); }
   html, body { height: 100%; }
   body {
     /* svh = visible height with the browser toolbars shown, so nothing hides behind the bottom bar */
@@ -237,8 +243,8 @@ h1 {
     padding-block: 1rem 0;
   }
   .wrap { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; padding-inline: 0; }
-  .top { flex: none; margin-bottom: 0; }
-  .date-pick { margin-bottom: 1.6rem; }
+  .top { flex: none; margin-bottom: 0.9rem; }
+  .date-pick { flex: none; margin-bottom: 1.2rem; }
   .legend { flex: none; gap: 0.45rem 1.1rem; margin: 0 0 1.1rem; }
   .legend li { font-size: 0.9rem; }
 
@@ -266,11 +272,7 @@ h1 {
   .empty { display: none; }
 
   .time { align-self: start; padding: 0.6rem 0 0 0.1rem; grid-row: 1 !important; }
-  .time .t { font-size: 0.95rem; line-height: 1.3; }
-  .time .t-sep { display: none; }
-  .time .t-a, .time .t-b { display: block; }
-  .time .t-b { opacity: 0.8; font-weight: 600; }
-  .time .t-b::before { content: "\2013\00a0"; }
+  .time .t { font-size: var(--tf); line-height: 1.3; white-space: nowrap; }
 
   .ev, .ev.both { grid-column: 2 !important; grid-row: auto !important; padding: 0.7rem 0.75rem; }
   .ev .ev-title { font-size: 1.05rem; line-height: 1.25; }
@@ -282,10 +284,6 @@ h1 {
           padding: 0.7rem 0 calc(0.8rem + env(safe-area-inset-bottom, 0px)); font-size: 0.8rem; }
   .day.is-off { display: none; }
 }
-@media (max-width: 380px) {
-  :root { --tw: 4.8rem; }
-  .time .t { font-size: 0.88rem; }
-}
 </style>
 
 <div class="wrap">
@@ -293,14 +291,18 @@ h1 {
     <div class="titles">
       <h1 id="title">Festival Schedule</h1>
       <p class="subtitle" id="subtitle">Conferences, Workshops &amp; Shows</p>
-      <div class="date-pick">
-        <select id="daySelect" aria-label="Choose festival day"></select>
-      </div>
     </div>
-    <img class="motif" src="logoFM.png" alt="" aria-hidden="true">
+    <div class="logos">
+      <img class="motif" src="logoFM.png" alt="" aria-hidden="true">
+      <img class="motif" src="handsCharity.png" alt="" aria-hidden="true">
+    </div>
   </header>
 
-  <ul class="legend" id="legend" aria-label="Event types"></ul>
+  <div class="date-pick">
+    <select id="daySelect" aria-label="Choose festival day"></select>
+  </div>
+
+  <!-- <ul class="legend" id="legend" aria-label="Event types"></ul> -->
   <main class="days" id="days"></main>
 </div>
 
@@ -346,8 +348,8 @@ h1 {
     types: [
       ["Conference", "#17A8A4"], ["Workshop", "#F4B400"], ["Youth Workshop", "#E04F8E"],
       ["Show", "#9C1A5C"], ["Break", "#6E5A74"],
-      ["Panel", "#F57C2B"], ["Networking", "#3B82F6"], ["Exhibition", "#8BC34A"],
-      ["Screening", "#8E6AE8"], ["Special Guest", "#E8D9B5"]
+      ["Panel", "#E8820C"], ["Networking", "#EF6A55"], ["Exhibition", "#0E7C86"],
+      ["Screening", "#8A4FA8"], ["Special Guest", "#E6D3A3"]
     ].map(function (r) { return { "type": r[0], "color (hex)": r[1] }; }),
     schedule: [
       ["Day 1", "10:00 - 10:45", B, "Show", "Opening Ceremony", "Festival Team"],
@@ -633,6 +635,22 @@ h1 {
     return sec;
   }
 
+  function buildLegend() {
+    var used = {};
+    model.events.forEach(function (e) { if (e.type) used[e.type.toLowerCase()] = true; });
+    var ul = el("ul", "legend");
+    ul.setAttribute("aria-label", "Event types");
+    model.typeOrder.forEach(function (name) {
+      if (!used[name.toLowerCase()]) return;
+      var li = el("li", null, name);
+      var dot = el("i");
+      dot.style.setProperty("--c", model.colors[name.toLowerCase()] || FALLBACK_COLOR);
+      li.insertBefore(dot, li.firstChild);
+      ul.appendChild(li);
+    });
+    return ul.childNodes.length ? ul : null;
+  }
+
   function applyDay() {
     var secs = document.querySelectorAll(".day");
     for (var i = 0; i < secs.length; i++) {
@@ -662,31 +680,34 @@ h1 {
 
     var used = {};
     model.events.forEach(function (e) { if (e.type) used[e.type.toLowerCase()] = true; });
-    var legend = document.getElementById("legend");
-    legend.textContent = "";
-    model.typeOrder.forEach(function (name) {
-      if (!used[name.toLowerCase()]) return;
-      var li = el("li", null, name);
-      var dot = el("i");
-      dot.style.setProperty("--c", model.colors[name.toLowerCase()] || FALLBACK_COLOR);
-      li.insertBefore(dot, li.firstChild);
-      legend.appendChild(li);
-    });
+    // var legend = document.getElementById("legend");
+    // legend.textContent = "";
+    // model.typeOrder.forEach(function (name) {
+    //   if (!used[name.toLowerCase()]) return;
+    //   var li = el("li", null, name);
+    //   var dot = el("i");
+    //   dot.style.setProperty("--c", model.colors[name.toLowerCase()] || FALLBACK_COLOR);
+    //   li.insertBefore(dot, li.firstChild);
+    //   legend.appendChild(li);
+    // });
 
     var days = document.getElementById("days");
     var keep = days.scrollTop;
     days.textContent = "";
     DAYS.forEach(function (d) { days.appendChild(dayNode(d)); });
+    var lg = buildLegend();
+    if (lg && days.lastChild) days.lastChild.appendChild(lg);
     applyDay();
     days.scrollTop = keep;
     document.title = model.title;
+    fitToScreen();
   }
 
   function showState(msg) {
     var days = document.getElementById("days");
     days.textContent = "";
     days.appendChild(el("div", "state", msg));
-    document.getElementById("legend").textContent = "";
+    //document.getElementById("legend").textContent = "";
   }
 
   function setStatus(msg) { document.getElementById("status").textContent = msg; }
@@ -694,6 +715,34 @@ h1 {
     try { return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
     catch (e) { return ""; }
   }
+
+  /* ---------- Fit the full tables on wide screens ----------
+     Finds the largest text size (10px to 40px) at which both day tables and the footer
+     fit in the window height. Below that size the page simply scrolls. Phones are untouched. */
+  var FIT_MIN = 10, FIT_MAX = 40;
+  function fitToScreen() {
+    var root = document.documentElement;
+    if (window.innerWidth < 1100) { root.style.fontSize = ""; return; }
+    var foot = document.querySelector(".foot");
+    function fits(px) {
+      root.style.fontSize = px + "px";
+      return foot.getBoundingClientRect().bottom + (window.pageYOffset || 0) <= window.innerHeight + 0.5;
+    }
+    if (fits(FIT_MAX)) return;
+    if (!fits(FIT_MIN)) { root.style.fontSize = FIT_MIN + "px"; return; }
+    var lo = FIT_MIN, hi = FIT_MAX;
+    for (var i = 0; i < 14; i++) {
+      var mid = (lo + hi) / 2;
+      if (fits(mid)) lo = mid; else hi = mid;
+    }
+    root.style.fontSize = lo + "px";
+  }
+  var fitTimer = 0;
+  function fitSoon() { clearTimeout(fitTimer); fitTimer = setTimeout(fitToScreen, 120); }
+  window.addEventListener("resize", fitSoon);
+  window.addEventListener("orientationchange", fitSoon);
+  window.addEventListener("load", fitToScreen);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitToScreen); } catch (e) {}
 
   /* ---------- Day selection ---------- */
   var d0 = dayFromHash();
@@ -715,7 +764,7 @@ h1 {
   function accept(data, from) {
     var j = JSON.stringify(data);
     if (j !== lastJSON) { lastJSON = j; model = normalize(data); render(); }
-    if (from === "live") { lastOk = clock(); setStatus("Updated " + lastOk); }
+    if (from === "live") { lastOk = clock(); setStatus("Mis à jour à " + lastOk); }
   }
 
   var lastOk = "";
