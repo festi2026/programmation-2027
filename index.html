@@ -23,7 +23,7 @@
   --font-display: "Sora", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --tw: 6rem;
-  --logo: clamp(3.4rem, 11vw, 8.4rem);
+  --logo: clamp(3rem, 11vw, 8rem);
   --logo-big: clamp(4rem, 11vw, 8.5rem);
   color-scheme: dark;
 }
@@ -50,7 +50,7 @@ body {
 .top { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1rem; }
 .top.no-sub { align-items: center; }
 .titles { min-width: 0; }
-.logos { display: flex; align-items: center; gap: 1.5rem; }
+.logos { display: flex; align-items: center; }
 h1 {
   margin: 0;
   font-family: var(--font-display);
@@ -226,6 +226,7 @@ h1 {
   .day .legend i { width: 0.9rem; height: 0.9rem; }
   .foot { margin-top: 1.2rem; font-size: 0.85rem; padding-top: 0.6rem; }
   img.motif { width: var(--logo-big); }
+  .logos { gap: 0.5rem; }
 }
 
 /* Phones and tablets */
@@ -284,6 +285,8 @@ h1 {
           padding: 0.7rem 0 calc(0.8rem + env(safe-area-inset-bottom, 0px)); font-size: 0.8rem; }
   .day.is-off { display: none; }
   .logos { gap: 1rem; }
+  .titles h1 { font-size: 1.2rem; }
+  .date-pick select { font-size: 1rem; }
 }
 </style>
 
