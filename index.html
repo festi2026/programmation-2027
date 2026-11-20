@@ -1,11 +1,14 @@
 <title>Festival Schedule</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-/* Layout: stacked title block over a glass table per day. Phone shows one day (picked from the title);
-   wide screens and TVs show both days side by side, date label left-aligned above each table. */
+/* Layout: stacked title block over a glass table per day.
+   Phone/tablet (< 1100px): one day at a time (picked from the title), 2-column table (time | event with room inside the cell),
+   only the table scrolls and its header stays sticky; the page is sized to the visible area above the browser toolbar.
+   Wide screens and TVs: both days side by side with a room header. */
 :root {
   --bg: #2a0721;
   --burgundy: #7a0f47;
@@ -44,7 +47,7 @@ body {
 .wrap { position: relative; max-width: 120rem; margin: 0 auto; padding-inline: clamp(0px, 1.6vw, 2.5rem); }
 
 /* Title block */
-.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;  }
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
 .top.no-sub { align-items: center; }
 .titles { min-width: 0; }
 h1 {
@@ -67,7 +70,7 @@ h1 {
 .motif { flex: none; width: clamp(4.6rem, 11vw, 8.4rem); height: auto; margin-top: 0.2rem; }
 
 /* Day picker: phones and tablets only */
-.date-pick { margin-top: 0.7rem; }
+.date-pick { margin-top: 0.9rem; }
 .date-pick select {
   appearance: none;
   -webkit-appearance: none;
@@ -87,7 +90,7 @@ h1 {
 .date-pick select option { background: #35092a; color: #fff; }
 .date-pick select:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem; margin: 0 0 2rem; padding: 0; list-style: none; }
 .legend li { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500; }
 .legend i { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--c); flex: none; }
 
@@ -139,6 +142,7 @@ h1 {
   justify-content: center;
 }
 .head .head-room { justify-content: center; text-align: center; padding-inline: 0.4rem; }
+.head .head-event { display: none; }
 .slots { display: flex; flex-direction: column; gap: 0.6rem; }
 
 .time {
@@ -166,6 +170,7 @@ h1 {
 .ev.both { grid-column: 2 / span 2; }
 .ev .ev-title { font-weight: 700; font-size: 0.84rem; line-height: 1.22; }
 .ev .ev-sp { margin-top: 0.22rem; font-weight: 500; font-size: 0.74rem; line-height: 1.25; opacity: 0.86; }
+.ev .ev-room { display: none; }
 .empty {
   min-width: 0;
   min-height: 2.6rem;
@@ -202,13 +207,84 @@ h1 {
   .head span { font-size: 0.9rem; }
   .legend li { font-size: 0.95rem; }
   .time .t { font-size: 0.95rem; }
+  .top { margin-bottom: 1.6rem; }
+  .legend { gap: 0.6rem 2rem; margin-bottom: 2.4rem; }
 }
+
+/* Very large screens: roomier header (title / legend / tables) */
+@media (min-width: 1600px) {
+  .top { margin-bottom: 2.2rem; }
+  .legend { gap: 0.8rem 3rem; margin-bottom: 3.4rem; }
+  .legend li { gap: 0.7rem; }
+}
+@media (min-width: 2300px) {
+  .top { margin-bottom: 2.8rem; }
+  .legend { gap: 1rem 3.6rem; margin-bottom: 4rem; }
+}
+
+/* Phones and tablets */
 @media (max-width: 1099px) {
+  :root { --tw: 5.2rem; }
+  html, body { height: 100%; }
+  body {
+    /* svh = visible height with the browser toolbars shown, so nothing hides behind the bottom bar */
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-block: 1rem 0;
+  }
+  .wrap { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; padding-inline: 0; }
+  .top { flex: none; margin-bottom: 0; }
+  .date-pick { margin-bottom: 1.6rem; }
+  .legend { flex: none; gap: 0.45rem 1.1rem; margin: 0 0 1.1rem; }
+  .legend li { font-size: 0.9rem; }
+
+  .days {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: 1rem;
+  }
+
+  /* Two columns only: time | event (title, speaker, room) */
+  .slot { grid-template-columns: var(--tw) minmax(0, 1fr); padding: 0.55rem; row-gap: 0.5rem; }
+  .head { grid-template-columns: var(--tw) minmax(0, 1fr); position: sticky; top: 0; z-index: 3;
+          margin-bottom: 0; padding: 0 0.55rem;
+          background: linear-gradient(var(--glass-strong), var(--glass-strong)), var(--bg);
+          box-shadow: 0 0.6rem 0 var(--bg); }
+  .slots { margin-top: 0.6rem; }
+  .head span { font-size: 0.95rem; padding-block: 0.75rem; }
+  .head .head-room { display: none; }
+  .head .head-event { display: flex; justify-content: center; text-align: center; padding-inline: 0.4rem; }
+  .empty { display: none; }
+
+  .time { align-self: start; padding: 0.6rem 0 0 0.1rem; grid-row: 1 !important; }
+  .time .t { font-size: 0.95rem; line-height: 1.3; }
+  .time .t-sep { display: none; }
+  .time .t-a, .time .t-b { display: block; }
+  .time .t-b { opacity: 0.8; font-weight: 600; }
+  .time .t-b::before { content: "\2013\00a0"; }
+
+  .ev, .ev.both { grid-column: 2 !important; grid-row: auto !important; padding: 0.7rem 0.75rem; }
+  .ev .ev-title { font-size: 1.05rem; line-height: 1.25; }
+  .ev .ev-sp { font-size: 0.92rem; margin-top: 0.3rem; }
+  .ev .ev-room { display: block; margin-top: 0.4rem; font-size: 0.85rem; font-weight: 600; line-height: 1.2; opacity: 0.92; }
+
+  .none { font-size: 1rem; }
+  .foot { flex: none; margin: 0; width: 100%;
+          padding: 0.7rem 0 calc(0.8rem + env(safe-area-inset-bottom, 0px)); font-size: 0.8rem; }
   .day.is-off { display: none; }
 }
 @media (max-width: 380px) {
-  :root { --tw: 5.4rem; }
-  .time .t { font-size: 0.68rem; }
+  :root { --tw: 4.8rem; }
+  .time .t { font-size: 0.88rem; }
 }
 </style>
 
@@ -262,13 +338,16 @@ h1 {
       "title": "Festival Schedule",
       "subtitle": "Conferences, Workshops & Shows",
       "time header": "Time",
+      "event header": "Event",
       "day 1 label": "Day 1 - Saturday",
       "day 2 label": "Day 2 - Sunday",
       "footer": "Schedule may change. Check this screen for updates."
     },
     types: [
       ["Conference", "#17A8A4"], ["Workshop", "#F4B400"], ["Youth Workshop", "#E04F8E"],
-      ["Show", "#9C1A5C"], ["Break", "#6E5A74"]
+      ["Show", "#9C1A5C"], ["Break", "#6E5A74"],
+      ["Panel", "#F57C2B"], ["Networking", "#3B82F6"], ["Exhibition", "#8BC34A"],
+      ["Screening", "#8E6AE8"], ["Special Guest", "#E8D9B5"]
     ].map(function (r) { return { "type": r[0], "color (hex)": r[1] }; }),
     schedule: [
       ["Day 1", "10:00 - 10:45", B, "Show", "Opening Ceremony", "Festival Team"],
@@ -409,8 +488,8 @@ h1 {
     }
     return pad2(h) + "h" + pad2(mi);
   }
-  function fmtTimeRange(t) {
-    return t.split(/\s*[-\u2013\u2014]\s*|\s+to\s+/i).map(fmtOne).join(" - ");
+  function fmtTimeParts(t) {
+    return t.split(/\s*[-\u2013\u2014]\s*|\s+to\s+/i).map(fmtOne);
   }
 
   function el(tag, cls, text) {
@@ -443,6 +522,7 @@ h1 {
         day: +d[0],
         time: (r["time"] || "").replace(/\s+/g, " ").trim(),
         room: idx,               /* -1 = spans both rooms */
+        roomLabel: room,
         type: type,
         title: title,
         speaker: (r["speaker"] || "").trim(),
@@ -453,6 +533,7 @@ h1 {
       title: s["title"] || "Festival Schedule",
       subtitle: s["subtitle"] || "",
       timeHeader: s["time header"] || "Time",
+      eventHeader: s["event header"] || "Event",
       footer: s["footer"] || "",
       dayLabels: { 1: s["day 1 label"] || "Day 1", 2: s["day 2 label"] || "Day 2" },
       colors: colors,
@@ -477,8 +558,24 @@ h1 {
     c.style.setProperty("--t", inkFor(hex));
     c.appendChild(el("div", "ev-title", ev.title));
     if (ev.speaker) c.appendChild(el("div", "ev-sp", ev.speaker));
+    /* Room line: only visible on phones/tablets, where the room header is hidden */
+    var roomName = ev.room >= 0 ? ROOMS[ev.room] : ev.roomLabel;
+    if (roomName) c.appendChild(el("div", "ev-room", roomName));
     if (ev.type) c.appendChild(el("span", "sr", ev.type));
     return c;
+  }
+
+  function timeNode(time) {
+    var parts = fmtTimeParts(time);
+    var span = el("span", "t");
+    if (parts.length === 2) {
+      span.appendChild(el("span", "t-a", parts[0]));
+      span.appendChild(el("span", "t-sep", " - "));
+      span.appendChild(el("span", "t-b", parts[1]));
+    } else {
+      span.textContent = parts.join(" - ");
+    }
+    return span;
   }
 
   function slotNode(time, list) {
@@ -490,7 +587,7 @@ h1 {
 
     var t = el("div", "time");
     t.style.gridRow = "1 / span " + Math.max(total, 1);
-    t.appendChild(el("span", "t", fmtTimeRange(time)));
+    t.appendChild(timeNode(time));
     slot.appendChild(t);
 
     for (var i = 0; i < roomRows; i++) {
@@ -517,6 +614,7 @@ h1 {
     var head = el("div", "head");
     head.appendChild(el("span", "head-time", model.timeHeader));
     ROOMS.forEach(function (n) { head.appendChild(el("span", "head-room", n)); });
+    head.appendChild(el("span", "head-event", model.eventHeader));
     sec.appendChild(head);
 
     var evs = model.events.filter(function (e) { return e.day === day; });
@@ -542,6 +640,8 @@ h1 {
     }
     var sel = document.getElementById("daySelect");
     if (sel.value !== String(currentDay)) sel.value = String(currentDay);
+    var scroller = document.getElementById("days");
+    if (scroller) scroller.scrollTop = 0;
   }
 
   function render() {
@@ -574,9 +674,11 @@ h1 {
     });
 
     var days = document.getElementById("days");
+    var keep = days.scrollTop;
     days.textContent = "";
     DAYS.forEach(function (d) { days.appendChild(dayNode(d)); });
     applyDay();
+    days.scrollTop = keep;
     document.title = model.title;
   }
 
